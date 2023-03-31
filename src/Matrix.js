@@ -52,16 +52,88 @@ export class Matrix {
         return new Tuple(result[0], result[1], result[2], result[3]);
     }
 
-    // getter by row and col
-  
-    // static identity() {
-    //   return new Matrix([
-    //     [1, 0, 0, 0],
-    //     [0, 1, 0, 0],
-    //     [0, 0, 1, 0],
-    //     [0, 0, 0, 1]
-    //   ]);
-    // }
+    transpose() {
+        const result = [];
+        for (let row = 0; row < this.rows.length; row++) {
+            const resultRow = [];
+            for (let column = 0; column < this.rows[row].length; column++) {
+                resultRow.push(this.get(column, row));
+            }
+            result.push(resultRow);
+        }
+        return new Matrix(result);
+    }
+
+    determinant() {
+        if (this.rows.length === 2) {
+            return this.get(0, 0) * this.get(1, 1) - this.get(0, 1) * this.get(1, 0);
+        }
+        let sum = 0;
+        for (let column = 0; column < this.rows[0].length; column++) {
+            sum += this.get(0, column) * this.cofactor(0, column);
+        }
+        return sum;
+    }
+
+    submatrix(row, column) {
+        const result = [];
+        for (let r = 0; r < this.rows.length; r++) {
+            if (r === row) {
+                continue;
+            }
+            const resultRow = [];
+            for (let c = 0; c < this.rows[r].length; c++) {
+                if (c === column) {
+                    continue;
+                }
+                resultRow.push(this.get(r, c));
+            }
+            result.push(resultRow);
+        }
+        return new Matrix(result);
+    }
+
+    minor(row, column) {
+        return this.submatrix(row, column).determinant();
+    }
+
+    cofactor(row, column) {
+        const minor = this.minor(row, column);
+        if ((row + column) % 2 === 0) {
+            return minor;
+        }
+        return -minor;
+    }
+
+    isInvertible() {
+        return this.determinant() !== 0;
+    }
+
+    inverse() {
+        if (!this.isInvertible()) {
+            throw new Error("Matrix is not invertible");
+        }
+        const result = [];
+        const determinant = this.determinant();
+        for (let row = 0; row < this.rows.length; row++) {
+            const resultRow = [];
+            for (let column = 0; column < this.rows[row].length; column++) {
+                const cofactor = this.cofactor(row, column);
+                resultRow.push(cofactor / determinant);
+            }
+            result.push(resultRow);
+        }
+        return new Matrix(result);
+    }
+
+    static identity() {
+      return new Matrix([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ]);
+    }
   
     // static translation(x, y, z) {
     //   return new Matrix([
